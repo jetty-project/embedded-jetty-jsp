@@ -37,6 +37,8 @@ import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.log.JavaUtilLog;
 import org.eclipse.jetty.util.log.Log;
 
+import com.acme.DateServlet;
+
 /**
  * Example of using JSP's with embedded jetty and not requiring
  * all of the overhead of a WebAppContext
@@ -111,6 +113,9 @@ public class Main
         context.setAttribute("javax.servlet.context.tempdir",scratchDir);
         context.setResourceBase(baseUri.toASCIIString());
         server.setHandler(context);
+        
+        // Add Application Servlets
+        context.addServlet(DateServlet.class,"/date/");
 
         // Set Classloader of Context to be sane (needed for JSTL)
         // JSP requires a non-System classloader, this simply wraps the
