@@ -4,7 +4,7 @@
   <groupId>org.eclipse.jetty.demo</groupId>
   <artifactId>embedded-jetty-jsp</artifactId>
   <version>1-SNAPSHOT</version>
-  <packaging>war</packaging>
+  <packaging>jar</packaging>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <jetty-version>9.1.0.v20131115</jetty-version>
@@ -78,7 +78,7 @@
           <arguments>
             <argument>-cp</argument>
             <classpath />
-            <argument>org.eclipse.jetty.demo.EmbedMe</argument>
+            <argument>org.eclipse.jetty.demo.Main</argument>
             <argument>8080</argument>
           </arguments>
         </configuration>
