@@ -13,5 +13,5 @@ Open your web browser to
 
     http://localhost:8080/  for the root of the project
 
-To stop Jetty, use [Ctrl+C]
+To stop Jetty, use <kbd>CTRL</kbd>+<kbd>C</kbd>
 
