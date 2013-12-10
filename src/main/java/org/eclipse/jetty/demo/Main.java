@@ -28,9 +28,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.jasper.servlet.JspServlet;
-import org.eclipse.jetty.server.ConnectionFactory;
 import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.server.nio.SelectChannelConnector;
 import org.eclipse.jetty.servlet.DefaultServlet;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -78,7 +77,8 @@ public class Main
     public void start() throws Exception
     {
         server = new Server();
-        ServerConnector connector = new ServerConnector(server);
+        
+        SelectChannelConnector connector = new SelectChannelConnector();
         connector.setPort(port);
         server.addConnector(connector);
 
@@ -130,8 +130,8 @@ public class Main
         holderJsp.setInitParameter("logVerbosityLevel","DEBUG");
         holderJsp.setInitParameter("fork","false");
         holderJsp.setInitParameter("xpoweredBy","false");
-        holderJsp.setInitParameter("compilerTargetVM","1.7");
-        holderJsp.setInitParameter("compilerSourceVM","1.7");
+        holderJsp.setInitParameter("compilerTargetVM","1.6");
+        holderJsp.setInitParameter("compilerSourceVM","1.6");
         holderJsp.setInitParameter("keepgenerated","true");
         context.addServlet(holderJsp,"*.jsp");
         context.addServlet(holderJsp,"*.jspf");
@@ -160,13 +160,6 @@ public class Main
 
         // Establish the Server URI
         String scheme = "http";
-        for (ConnectionFactory connectFactory : connector.getConnectionFactories())
-        {
-            if (connectFactory.getProtocol().equals("SSL-http"))
-            {
-                scheme = "https";
-            }
-        }
         String host = connector.getHost();
         if (host == null)
         {

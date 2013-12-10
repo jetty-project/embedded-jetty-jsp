@@ -7,14 +7,9 @@
   <packaging>jar</packaging>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <jetty-version>9.1.0.v20131115</jetty-version>
+    <jetty-version>8.1.14.v20131031</jetty-version>
   </properties>
   <dependencies>
-    <dependency>
-      <groupId>javax.servlet</groupId>
-      <artifactId>javax.servlet-api</artifactId>
-      <version>3.1.0</version>
-    </dependency>
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-webapp</artifactId>
@@ -40,8 +35,8 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>2.3.2</version>
         <configuration>
-          <source>1.7</source>
-          <target>1.7</target>
+          <source>1.6</source>
+          <target>1.6</target>
         </configuration>
       </plugin>
       <plugin>
@@ -60,9 +55,9 @@
                   <version>[3.0.0,)</version>
                 </requireMavenVersion>
                 <requireJavaVersion>
-                  <version>[1.7,)</version>
+                  <version>[1.6,)</version>
                   <message>[ERROR] OLD JDK [${java.version}] in use.
-                    Jetty ${jetty-version} requires JDK 1.7 or newer</message>
+                    Jetty ${jetty-version} requires JDK 1.6 or newer</message>
                 </requireJavaVersion>
               </rules>
             </configuration>

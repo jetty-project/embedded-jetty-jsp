@@ -23,6 +23,8 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.logging.LogManager;
 
+import org.eclipse.jetty.util.IO;
+
 public final class LoggingUtil
 {
     public static void config()
@@ -31,13 +33,19 @@ public final class LoggingUtil
         URL url = cl.getResource("logging.properties");
         if (url != null)
         {
-            try(InputStream in = url.openStream())
+            InputStream in = null;
+            try
             {
+                in = url.openStream();
                 LogManager.getLogManager().readConfiguration(in);
             }
             catch (IOException e)
             {
                 e.printStackTrace(System.err);
+            }
+            finally
+            {
+                IO.close(in);
             }
         }
     }
