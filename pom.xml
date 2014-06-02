@@ -7,7 +7,7 @@
   <packaging>jar</packaging>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <jetty-version>9.1.0.v20131115</jetty-version>
+    <jetty-version>9.2.0.v20140526</jetty-version>
   </properties>
   <dependencies>
     <dependency>
@@ -15,6 +15,11 @@
       <artifactId>javax.servlet-api</artifactId>
       <version>3.1.0</version>
     </dependency>
+    <!-- dependency>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-annotations</artifactId>
+      <version>${jetty-version}</version>
+    </dependency -->
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-webapp</artifactId>
@@ -22,15 +27,15 @@
     </dependency>
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
-      <artifactId>jetty-jsp</artifactId>
+      <artifactId>apache-jsp</artifactId>
+      <version>${jetty-version}</version>
+      <type>jar</type>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>apache-jstl</artifactId>
       <version>${jetty-version}</version>
       <type>pom</type>
-      <exclusions>
-        <exclusion>
-          <artifactId>org.eclipse.jdt.core</artifactId>
-          <groupId>org.eclipse.jetty.orbit</groupId>
-        </exclusion>
-      </exclusions>
     </dependency>
   </dependencies>
   <build>

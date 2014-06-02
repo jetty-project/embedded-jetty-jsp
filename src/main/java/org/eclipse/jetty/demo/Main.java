@@ -26,8 +26,15 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.HashSet;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
 
 import org.apache.jasper.servlet.JspServlet;
+import org.apache.tomcat.InstanceManager;
+import org.apache.tomcat.SimpleInstanceManager;
+import org.eclipse.jetty.apache.jsp.JettyJasperInitializer;
 import org.eclipse.jetty.server.ConnectionFactory;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
@@ -106,16 +113,42 @@ public class Main
         // Set JSP to use Standard JavaC always
         System.setProperty("org.apache.jasper.compiler.disablejsr199","false");
 
+
         // Setup the basic application "context" for this application at "/"
         // This is also known as the handler tree (in jetty speak)
         ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
         context.setContextPath("/");
         context.setAttribute("javax.servlet.context.tempdir",scratchDir);
         context.setResourceBase(baseUri.toASCIIString());
+        context.setAttribute(InstanceManager.class.getName(), new SimpleInstanceManager());
         server.setHandler(context);
         
         // Add Application Servlets
         context.addServlet(DateServlet.class,"/date/");
+
+        //Add a callback to invoke the jsp engine initialization - NOTE if you have listeners defined in
+        //your tlds, this technique will not work. In that case, you need to use a WebAppContext instead
+        //of a ServletContextHandler and you need to ensure that you enable annotations.
+        context.addEventListener(new ServletContextListener()
+           {
+                  public void contextInitialized(ServletContextEvent sce)
+                  {
+                     try
+                     {
+                        JettyJasperInitializer sci = new JettyJasperInitializer();
+                        sci.onStartup(new HashSet<Class<?>>(), sce.getServletContext());
+                     }
+                     catch (Exception e)
+                     {
+                        e.printStackTrace();
+                     }
+                  }
+
+                  public void contextDestroyed(ServletContextEvent sce)
+                  {
+                  }
+           }
+        );
 
         // Set Classloader of Context to be sane (needed for JSTL)
         // JSP requires a non-System classloader, this simply wraps the
@@ -134,8 +167,8 @@ public class Main
         holderJsp.setInitParameter("compilerSourceVM","1.7");
         holderJsp.setInitParameter("keepgenerated","true");
         context.addServlet(holderJsp,"*.jsp");
-        context.addServlet(holderJsp,"*.jspf");
-        context.addServlet(holderJsp,"*.jspx");
+        //context.addServlet(holderJsp,"*.jspf");
+        //context.addServlet(holderJsp,"*.jspx");
 
         // Add Example of mapping jsp to path spec
         ServletHolder holderAltMapping = new ServletHolder("foo.jsp", JspServlet.class);
