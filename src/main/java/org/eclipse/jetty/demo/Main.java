@@ -24,6 +24,8 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.HashSet;
@@ -34,7 +36,9 @@ import javax.servlet.ServletContextListener;
 import org.apache.jasper.servlet.JspServlet;
 import org.apache.tomcat.InstanceManager;
 import org.apache.tomcat.SimpleInstanceManager;
+import org.eclipse.jetty.annotations.ServletContainerInitializersStarter;
 import org.eclipse.jetty.apache.jsp.JettyJasperInitializer;
+import org.eclipse.jetty.plus.annotation.ContainerInitializer;
 import org.eclipse.jetty.server.ConnectionFactory;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
@@ -43,6 +47,7 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.log.JavaUtilLog;
 import org.eclipse.jetty.util.log.Log;
+import org.eclipse.jetty.webapp.WebAppContext;
 
 import com.acme.DateServlet;
 
@@ -116,7 +121,7 @@ public class Main
 
         // Setup the basic application "context" for this application at "/"
         // This is also known as the handler tree (in jetty speak)
-        ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
+        WebAppContext context = new WebAppContext();
         context.setContextPath("/");
         context.setAttribute("javax.servlet.context.tempdir",scratchDir);
         context.setResourceBase(baseUri.toASCIIString());
@@ -126,29 +131,17 @@ public class Main
         // Add Application Servlets
         context.addServlet(DateServlet.class,"/date/");
 
-        //Add a callback to invoke the jsp engine initialization - NOTE if you have listeners defined in
-        //your tlds, this technique will not work. In that case, you need to use a WebAppContext instead
-        //of a ServletContextHandler and you need to ensure that you enable annotations.
-        context.addEventListener(new ServletContextListener()
-           {
-                  public void contextInitialized(ServletContextEvent sce)
-                  {
-                     try
-                     {
-                        JettyJasperInitializer sci = new JettyJasperInitializer();
-                        sci.onStartup(new HashSet<Class<?>>(), sce.getServletContext());
-                     }
-                     catch (Exception e)
-                     {
-                        e.printStackTrace();
-                     }
-                  }
+        //Ensure the jsp engine is initialized correctly
+        JettyJasperInitializer sci = new JettyJasperInitializer();
+        ServletContainerInitializersStarter sciStarter = new ServletContainerInitializersStarter(context);
+        ContainerInitializer initializer = new ContainerInitializer(sci, null);
+        List<ContainerInitializer> initializers = new ArrayList<ContainerInitializer>();
+        initializers.add(initializer);
 
-                  public void contextDestroyed(ServletContextEvent sce)
-                  {
-                  }
-           }
-        );
+        context.setAttribute("org.eclipse.jetty.containerInitializers", initializers);
+        context.addBean(sciStarter, true);
+
+
 
         // Set Classloader of Context to be sane (needed for JSTL)
         // JSP requires a non-System classloader, this simply wraps the
