@@ -133,7 +133,7 @@ public class Main
     private File getScratchDir() throws IOException
     {
         File tempDir = new File(System.getProperty("java.io.tmpdir"));
-        File scratchDir = new File(tempDir.toString(),"embedded-jetty-jsp");
+        File scratchDir = new File(tempDir.toString(), "embedded-jetty-jsp");
 
         if (!scratchDir.exists())
         {
@@ -153,19 +153,19 @@ public class Main
     {
         WebAppContext context = new WebAppContext();
         context.setContextPath("/");
-        context.setAttribute("javax.servlet.context.tempdir",scratchDir);
+        context.setAttribute("javax.servlet.context.tempdir", scratchDir);
         context.setResourceBase(baseUri.toASCIIString());
         context.setAttribute("org.eclipse.jetty.containerInitializers", jspInitializers());
         context.setAttribute(InstanceManager.class.getName(), new SimpleInstanceManager());
         context.addBean(new ServletContainerInitializersStarter(context), true);
         context.setClassLoader(getUrlClassLoader());
 
-        context.addServlet(jspServletHolder(),"*.jsp");
+        context.addServlet(jspServletHolder(), "*.jsp");
         // Add Application Servlets
-        context.addServlet(DateServlet.class,"/date/");
+        context.addServlet(DateServlet.class, "/date/");
 
-        context.addServlet(exampleFooServletHolder(),"/test/foo/");
-        context.addServlet(defaultServletHolder(baseUri),"/");
+        context.addServlet(exampleFooServletHolder(), "/test/foo/");
+        context.addServlet(defaultServletHolder(baseUri), "/");
         return context;
     }
 
@@ -200,12 +200,12 @@ public class Main
     {
         ServletHolder holderJsp = new ServletHolder("jsp", JspServlet.class);
         holderJsp.setInitOrder(0);
-        holderJsp.setInitParameter("logVerbosityLevel","DEBUG");
-        holderJsp.setInitParameter("fork","false");
-        holderJsp.setInitParameter("xpoweredBy","false");
-        holderJsp.setInitParameter("compilerTargetVM","1.7");
-        holderJsp.setInitParameter("compilerSourceVM","1.7");
-        holderJsp.setInitParameter("keepgenerated","true");
+        holderJsp.setInitParameter("logVerbosityLevel", "DEBUG");
+        holderJsp.setInitParameter("fork", "false");
+        holderJsp.setInitParameter("xpoweredBy", "false");
+        holderJsp.setInitParameter("compilerTargetVM", "1.7");
+        holderJsp.setInitParameter("compilerSourceVM", "1.7");
+        holderJsp.setInitParameter("keepgenerated", "true");
         return holderJsp;
     }
 
@@ -224,10 +224,10 @@ public class Main
      */
     private ServletHolder defaultServletHolder(URI baseUri)
     {
-        ServletHolder holderDefault = new ServletHolder("default",DefaultServlet.class);
+        ServletHolder holderDefault = new ServletHolder("default", DefaultServlet.class);
         LOG.info("Base URI: " + baseUri);
-        holderDefault.setInitParameter("resourceBase",baseUri.toASCIIString());
-        holderDefault.setInitParameter("dirAllowed","true");
+        holderDefault.setInitParameter("resourceBase", baseUri.toASCIIString());
+        holderDefault.setInitParameter("dirAllowed", "true");
         return holderDefault;
     }
 
@@ -250,7 +250,7 @@ public class Main
             host = "localhost";
         }
         int port = connector.getLocalPort();
-        serverURI = new URI(String.format("%s://%s:%d/",scheme,host,port));
+        serverURI = new URI(String.format("%s://%s:%d/", scheme, host, port));
         LOG.info("Server URI: " + serverURI);
         return serverURI;
     }
