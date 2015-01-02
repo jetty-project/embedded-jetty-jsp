@@ -22,16 +22,13 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.HashSet;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
 
 import org.apache.jasper.servlet.JspServlet;
 import org.apache.tomcat.InstanceManager;
@@ -43,7 +40,6 @@ import org.eclipse.jetty.server.ConnectionFactory;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.DefaultServlet;
-import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.log.JavaUtilLog;
 import org.eclipse.jetty.util.log.Log;
@@ -90,20 +86,52 @@ public class Main
     public void start() throws Exception
     {
         server = new Server();
-        ServerConnector connector = new ServerConnector(server);
-        connector.setPort(port);
+        ServerConnector connector = connector();
         server.addConnector(connector);
 
+        URI baseUri = getWebRootResourceUri();
+
+        // Set JSP to use Standard JavaC always
+        System.setProperty("org.apache.jasper.compiler.disablejsr199", "false");
+
+        WebAppContext webAppContext = getWebAppContext(baseUri, getScratchDir());
+
+        server.setHandler(webAppContext);
+
+        // Start Server
+        server.start();
+
+        // Show server state
+        if (LOG.isLoggable(Level.FINE))
+        {
+            LOG.fine(server.dump());
+        }
+        this.serverURI = getServerUri(connector);
+    }
+
+    private ServerConnector connector()
+    {
+        ServerConnector connector = new ServerConnector(server);
+        connector.setPort(port);
+        return connector;
+    }
+
+    private URI getWebRootResourceUri() throws FileNotFoundException, URISyntaxException
+    {
         URL indexUri = this.getClass().getResource(WEBROOT_INDEX);
         if (indexUri == null)
         {
             throw new FileNotFoundException("Unable to find resource " + WEBROOT_INDEX);
         }
-
         // Points to wherever /webroot/ (the resource) is
-        URI baseUri = indexUri.toURI();
+        return indexUri.toURI();
+    }
 
-        // Establish Scratch directory for the servlet context (used by JSP compilation)
+    /**
+     * Establish Scratch directory for the servlet context (used by JSP compilation)
+     */
+    private File getScratchDir() throws IOException
+    {
         File tempDir = new File(System.getProperty("java.io.tmpdir"));
         File scratchDir = new File(tempDir.toString(),"embedded-jetty-jsp");
 
@@ -114,44 +142,63 @@ public class Main
                 throw new IOException("Unable to create scratch directory: " + scratchDir);
             }
         }
+        return scratchDir;
+    }
 
-        // Set JSP to use Standard JavaC always
-        System.setProperty("org.apache.jasper.compiler.disablejsr199","false");
-
-
-        // Setup the basic application "context" for this application at "/"
-        // This is also known as the handler tree (in jetty speak)
+    /**
+     * Setup the basic application "context" for this application at "/"
+     * This is also known as the handler tree (in jetty speak)
+     */
+    private WebAppContext getWebAppContext(URI baseUri, File scratchDir)
+    {
         WebAppContext context = new WebAppContext();
         context.setContextPath("/");
         context.setAttribute("javax.servlet.context.tempdir",scratchDir);
         context.setResourceBase(baseUri.toASCIIString());
+        context.setAttribute("org.eclipse.jetty.containerInitializers", jspInitializers());
         context.setAttribute(InstanceManager.class.getName(), new SimpleInstanceManager());
-        server.setHandler(context);
-        
+        context.addBean(new ServletContainerInitializersStarter(context), true);
+        context.setClassLoader(getUrlClassLoader());
+
+        context.addServlet(jspServletHolder(),"*.jsp");
         // Add Application Servlets
         context.addServlet(DateServlet.class,"/date/");
 
-        //Ensure the jsp engine is initialized correctly
+        context.addServlet(exampleFooServletHolder(),"/test/foo/");
+        context.addServlet(defaultServletHolder(baseUri),"/");
+        return context;
+    }
+
+    /**
+     * Ensure the jsp engine is initialized correctly
+     */
+    private List<ContainerInitializer> jspInitializers()
+    {
         JettyJasperInitializer sci = new JettyJasperInitializer();
-        ServletContainerInitializersStarter sciStarter = new ServletContainerInitializersStarter(context);
         ContainerInitializer initializer = new ContainerInitializer(sci, null);
         List<ContainerInitializer> initializers = new ArrayList<ContainerInitializer>();
         initializers.add(initializer);
+        return initializers;
+    }
 
-        context.setAttribute("org.eclipse.jetty.containerInitializers", initializers);
-        context.addBean(sciStarter, true);
-
-
-
-        // Set Classloader of Context to be sane (needed for JSTL)
-        // JSP requires a non-System classloader, this simply wraps the
-        // embedded System classloader in a way that makes it suitable
-        // for JSP to use
+    /**
+     * Set Classloader of Context to be sane (needed for JSTL)
+     * JSP requires a non-System classloader, this simply wraps the
+     * embedded System classloader in a way that makes it suitable
+     * for JSP to use
+     */
+    private ClassLoader getUrlClassLoader()
+    {
         ClassLoader jspClassLoader = new URLClassLoader(new URL[0], this.getClass().getClassLoader());
-        context.setClassLoader(jspClassLoader);
+        return jspClassLoader;
+    }
 
-        // Add JSP Servlet (must be named "jsp")
-        ServletHolder holderJsp = new ServletHolder("jsp",JspServlet.class);
+    /**
+     * Create JSP Servlet (must be named "jsp")
+     */
+    private ServletHolder jspServletHolder()
+    {
+        ServletHolder holderJsp = new ServletHolder("jsp", JspServlet.class);
         holderJsp.setInitOrder(0);
         holderJsp.setInitParameter("logVerbosityLevel","DEBUG");
         holderJsp.setInitParameter("fork","false");
@@ -159,32 +206,36 @@ public class Main
         holderJsp.setInitParameter("compilerTargetVM","1.7");
         holderJsp.setInitParameter("compilerSourceVM","1.7");
         holderJsp.setInitParameter("keepgenerated","true");
-        context.addServlet(holderJsp,"*.jsp");
-        //context.addServlet(holderJsp,"*.jspf");
-        //context.addServlet(holderJsp,"*.jspx");
+        return holderJsp;
+    }
 
-        // Add Example of mapping jsp to path spec
+    /**
+     * Create Example of mapping jsp to path spec
+     */
+    private ServletHolder exampleFooServletHolder()
+    {
         ServletHolder holderAltMapping = new ServletHolder("foo.jsp", JspServlet.class);
         holderAltMapping.setForcedPath("/test/foo/foo.jsp");
-        context.addServlet(holderAltMapping,"/test/foo/");
+        return holderAltMapping;
+    }
 
-        // Add Default Servlet (must be named "default")
+    /**
+     * Create Default Servlet (must be named "default")
+     */
+    private ServletHolder defaultServletHolder(URI baseUri)
+    {
         ServletHolder holderDefault = new ServletHolder("default",DefaultServlet.class);
         LOG.info("Base URI: " + baseUri);
         holderDefault.setInitParameter("resourceBase",baseUri.toASCIIString());
         holderDefault.setInitParameter("dirAllowed","true");
-        context.addServlet(holderDefault,"/");
+        return holderDefault;
+    }
 
-        // Start Server
-        server.start();
-
-        // Show server state
-        if (LOG.isLoggable(Level.FINE))
-        {
-            LOG.fine(server.dump());
-        }
-
-        // Establish the Server URI
+    /**
+     * Establish the Server URI
+     */
+    private URI getServerUri(ServerConnector connector) throws URISyntaxException
+    {
         String scheme = "http";
         for (ConnectionFactory connectFactory : connector.getConnectionFactories())
         {
@@ -201,6 +252,7 @@ public class Main
         int port = connector.getLocalPort();
         serverURI = new URI(String.format("%s://%s:%d/",scheme,host,port));
         LOG.info("Server URI: " + serverURI);
+        return serverURI;
     }
 
     public void stop() throws Exception
