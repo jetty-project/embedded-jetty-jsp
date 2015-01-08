@@ -7,7 +7,10 @@
   <packaging>jar</packaging>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+<!--
     <jetty-version>9.2.1.v20140609</jetty-version>
+-->
+    <jetty-version>9.2.6.v20141205</jetty-version>
   </properties>
   <dependencies>
     <dependency>
@@ -81,6 +84,7 @@
         <configuration>
           <executable>java</executable>
           <arguments>
+            <argument>-Dorg.eclipse.jetty.webapp.LEVEL=DEBUG</argument>
             <argument>-cp</argument>
             <classpath />
             <argument>org.eclipse.jetty.demo.Main</argument>

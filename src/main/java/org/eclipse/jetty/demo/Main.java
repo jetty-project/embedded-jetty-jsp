@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.apache.jasper.servlet.JspServlet;
+import org.eclipse.jetty.jsp.JettyJspServlet;
 import org.apache.tomcat.InstanceManager;
 import org.apache.tomcat.SimpleInstanceManager;
 import org.eclipse.jetty.annotations.ServletContainerInitializersStarter;
@@ -154,6 +154,8 @@ public class Main
         WebAppContext context = new WebAppContext();
         context.setContextPath("/");
         context.setAttribute("javax.servlet.context.tempdir", scratchDir);
+        context.setAttribute("org.eclipse.jetty.server.webapp.ContainerIncludeJarPattern",
+          ".*/[^/]*servlet-api-[^/]*\\.jar$|.*/javax.servlet.jsp.jstl-.*\\.jar$|.*/.*taglibs.*\\.jar$");
         context.setResourceBase(baseUri.toASCIIString());
         context.setAttribute("org.eclipse.jetty.containerInitializers", jspInitializers());
         context.setAttribute(InstanceManager.class.getName(), new SimpleInstanceManager());
@@ -164,7 +166,7 @@ public class Main
         // Add Application Servlets
         context.addServlet(DateServlet.class, "/date/");
 
-        context.addServlet(exampleFooServletHolder(), "/test/foo/");
+        context.addServlet(exampleJspFileMappedServletHolder(), "/test/foo/");
         context.addServlet(defaultServletHolder(baseUri), "/");
         return context;
     }
@@ -198,7 +200,7 @@ public class Main
      */
     private ServletHolder jspServletHolder()
     {
-        ServletHolder holderJsp = new ServletHolder("jsp", JspServlet.class);
+        ServletHolder holderJsp = new ServletHolder("jsp", JettyJspServlet.class);
         holderJsp.setInitOrder(0);
         holderJsp.setInitParameter("logVerbosityLevel", "DEBUG");
         holderJsp.setInitParameter("fork", "false");
@@ -212,9 +214,10 @@ public class Main
     /**
      * Create Example of mapping jsp to path spec
      */
-    private ServletHolder exampleFooServletHolder()
+    private ServletHolder exampleJspFileMappedServletHolder()
     {
-        ServletHolder holderAltMapping = new ServletHolder("foo.jsp", JspServlet.class);
+        ServletHolder holderAltMapping = new ServletHolder();
+        holderAltMapping.setName("foo.jsp");
         holderAltMapping.setForcedPath("/test/foo/foo.jsp");
         return holderAltMapping;
     }
