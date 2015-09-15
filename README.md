@@ -21,7 +21,7 @@ To stop Jetty:
 Code Of Interest
 ----------------
 
-See (src/main/java/org/eclipse/jetty/demo/Main.java)
+See [org.eclipse.jetty.demo.Main](src/main/java/org/eclipse/jetty/demo/Main.java)
 
 **Use JavaC, Not Eclipse JDT**
 
