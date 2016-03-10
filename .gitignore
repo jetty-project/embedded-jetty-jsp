@@ -1,9 +1,36 @@
-.classpath
+# maven
+target
+*.versionsBackup
+*.releaseBackup
+
+# common junk
+*.log
+*.diff
+*.patch
+*.sw[a-z0-9]
+*.bak
+*.backup
+*.debug
+*.dump
+*~
+~*
+
+# eclipse
 .project
 .settings
-target/
-*.swp
-*.log
-*~
-.idea
+.classpath
+
+# intellij / idea
 *.iml
+*.ipr
+*.iws
+.idea/
+
+# netbeans
+nbproject/
+
+# Mac filesystem dust
+.DS_Store
+
+# merge tooling
+*.orig
