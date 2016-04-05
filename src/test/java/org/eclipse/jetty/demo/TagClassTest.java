@@ -7,10 +7,10 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static support.ResourceFetcher.resource;
 
-public class JstlTest extends AgainstJetty {
+public class TagClassTest extends AgainstJetty {
 
     @Test
-    public void canServeJspWithTaglib() throws Exception {
-        assertThat(resource("http://localhost:8080/test/jstl.jsp"), containsString("10"));
+    public void canServeJspWithCustomTagDefinedInJavaClass() throws Exception {
+        assertThat(resource("http://localhost:8080/test/tagclass.jsp"), containsString("Leaving scripting behind"));
     }
 }
