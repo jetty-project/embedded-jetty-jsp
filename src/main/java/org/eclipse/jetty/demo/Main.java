@@ -1,6 +1,6 @@
 //
 //  ========================================================================
-//  Copyright (c) 1995-2013 Mort Bay Consulting Pty. Ltd.
+//  Copyright (c) 1995-2016 Mort Bay Consulting Pty. Ltd.
 //  ------------------------------------------------------------------------
 //  All rights reserved. This program and the accompanying materials
 //  are made available under the terms of the Eclipse Public License v1.0
@@ -25,36 +25,79 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.eclipse.jetty.jsp.JettyJspServlet;
 import org.apache.tomcat.InstanceManager;
 import org.apache.tomcat.SimpleInstanceManager;
-import org.eclipse.jetty.annotations.ServletContainerInitializersStarter;
+import org.apache.tomcat.util.scan.StandardJarScanner;
 import org.eclipse.jetty.apache.jsp.JettyJasperInitializer;
-import org.eclipse.jetty.plus.annotation.ContainerInitializer;
+import org.eclipse.jetty.jsp.JettyJspServlet;
 import org.eclipse.jetty.server.ConnectionFactory;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.DefaultServlet;
+import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.util.component.AbstractLifeCycle;
 import org.eclipse.jetty.util.log.JavaUtilLog;
 import org.eclipse.jetty.util.log.Log;
-import org.eclipse.jetty.webapp.WebAppContext;
 
 import com.acme.DateServlet;
 
 /**
- * Example of using JSP's with embedded jetty and not requiring
- * all of the overhead of a WebAppContext
+ * Example of using JSP's with embedded jetty and using a
+ * lighter-weight ServletContextHandler instead of a WebAppContext. 
+ * 
+ * This example is somewhat odd in that it uses custom tag libs which reside
+ * in a WEB-INF directory, even though WEB-INF is not meaningful to
+ * a ServletContextHandler. This just shows that once we have
+ * properly initialized the jsp engine, you can even use this type of
+ * custom taglib, even if you don't have a full-fledged webapp.
+ * 
  */
 public class Main
 {
     // Resource path pointing to where the WEBROOT is
     private static final String WEBROOT_INDEX = "/webroot/";
+    
+    /**
+     * JspStarter
+     * 
+     * This is added as a bean that is a jetty LifeCycle on the ServletContextHandler.
+     * This bean's doStart method will be called as the ServletContextHandler starts,
+     * and will call the ServletContainerInitializer for the jsp engine.
+     *
+     */
+    public static class JspStarter extends AbstractLifeCycle implements ServletContextHandler.ServletContainerInitializerCaller
+    {
+        JettyJasperInitializer sci;
+        ServletContextHandler context;
+
+        
+        public JspStarter (ServletContextHandler context)
+        {
+            this.sci = new JettyJasperInitializer();
+            this.context = context;
+            this.context.setAttribute("org.apache.tomcat.JarScanner", new StandardJarScanner());
+        }
+
+        @Override
+        protected void doStart() throws Exception
+        {
+            ClassLoader old = Thread.currentThread().getContextClassLoader();
+            Thread.currentThread().setContextClassLoader(context.getClassLoader());
+            try
+            {
+                sci.onStartup(null, context.getServletContext());   
+                super.doStart();
+            }
+            finally
+            {
+                Thread.currentThread().setContextClassLoader(old);
+            }
+        }
+    }
 
     public static void main(String[] args) throws Exception
     {
@@ -89,14 +132,9 @@ public class Main
         ServerConnector connector = connector();
         server.addConnector(connector);
 
-        URI baseUri = getWebRootResourceUri();
-
-        // Set JSP to use Standard JavaC always
-        System.setProperty("org.apache.jasper.compiler.disablejsr199", "false");
-
-        WebAppContext webAppContext = getWebAppContext(baseUri, getScratchDir());
-
-        server.setHandler(webAppContext);
+        URI baseUri = getWebRootResourceUri(); 
+        ServletContextHandler sch  = getServletContextHandler(baseUri, getScratchDir());
+        server.setHandler(sch);
 
         // Start Server
         server.start();
@@ -145,43 +183,33 @@ public class Main
         return scratchDir;
     }
 
-    /**
-     * Setup the basic application "context" for this application at "/"
-     * This is also known as the handler tree (in jetty speak)
-     */
-    private WebAppContext getWebAppContext(URI baseUri, File scratchDir)
-    {
-        WebAppContext context = new WebAppContext();
-        context.setContextPath("/");
-        context.setAttribute("javax.servlet.context.tempdir", scratchDir);
-        context.setAttribute("org.eclipse.jetty.server.webapp.ContainerIncludeJarPattern",
-          ".*/[^/]*servlet-api-[^/]*\\.jar$|.*/javax.servlet.jsp.jstl-.*\\.jar$|.*/.*taglibs.*\\.jar$");
-        context.setResourceBase(baseUri.toASCIIString());
-        context.setAttribute("org.eclipse.jetty.containerInitializers", jspInitializers());
-        context.setAttribute(InstanceManager.class.getName(), new SimpleInstanceManager());
-        context.addBean(new ServletContainerInitializersStarter(context), true);
-        context.setClassLoader(getUrlClassLoader());
+  
 
-        context.addServlet(jspServletHolder(), "*.jsp");
+    /** 
+     * Create a ServletContextHandler and configure it.
+     * 
+     * @param baseUri the uri of the static content
+     * @param scratchDir the scratch output directory
+     * @return the freshly created ServletContextHandler
+     */
+    private ServletContextHandler getServletContextHandler(URI baseUri, File scratchDir)
+    {
+        ServletContextHandler sch = new ServletContextHandler(ServletContextHandler.SESSIONS);
+        sch.setContextPath("/");
+        sch.setAttribute("javax.servlet.context.tempdir", scratchDir);
+        sch.setResourceBase(baseUri.toASCIIString());
+        sch.setAttribute(InstanceManager.class.getName(),  new SimpleInstanceManager());
+        //add a bean that will call the jsp engine's ServletContaineInitializer as the context starts
+        sch.addBean(new JspStarter(sch));
+        sch.setClassLoader(getUrlClassLoader());
+        sch.addServlet(jspServletHolder(), "*.jsp");
         // Add Application Servlets
-        context.addServlet(DateServlet.class, "/date/");
-
-        context.addServlet(exampleJspFileMappedServletHolder(), "/test/foo/");
-        context.addServlet(defaultServletHolder(baseUri), "/");
-        return context;
+        sch.addServlet(DateServlet.class, "/date/");
+        sch.addServlet(exampleJspFileMappedServletHolder(), "/test/foo/");
+        sch.addServlet(defaultServletHolder(baseUri), "/");
+        return sch;
     }
-
-    /**
-     * Ensure the jsp engine is initialized correctly
-     */
-    private List<ContainerInitializer> jspInitializers()
-    {
-        JettyJasperInitializer sci = new JettyJasperInitializer();
-        ContainerInitializer initializer = new ContainerInitializer(sci, null);
-        List<ContainerInitializer> initializers = new ArrayList<ContainerInitializer>();
-        initializers.add(initializer);
-        return initializers;
-    }
+  
 
     /**
      * Set Classloader of Context to be sane (needed for JSTL)

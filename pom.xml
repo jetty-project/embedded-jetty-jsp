@@ -7,7 +7,7 @@
   <packaging>jar</packaging>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <jetty-version>9.3.7.v20160115</jetty-version>
+    <jetty-version>9.4.0.v20161208</jetty-version>
   </properties>
   <dependencies>
     <dependency>
@@ -19,6 +19,7 @@
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>4.12</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
@@ -95,6 +96,11 @@
           <executable>java</executable>
           <arguments>
             <argument>-Dorg.eclipse.jetty.webapp.LEVEL=DEBUG</argument>
+<!--
+            <argument>-Dorg.apache.jasper.servlet.TldScanner.LEVEL=DEBUG</argument>
+-->
+            <argument>-Dtomcat.util.scan.StandardJarScanFilter.jarsToScan=taglibs-standard-impl-*</argument>
+            <argument>-Dtomcat.util.scan.StandardJarScanFilter.jarsToSkip=apache-*,ecj-*,jetty-*,asm-*,javax.servlet-*,javax.annotation-*,taglibs-standard-spec-*</argument>
             <argument>-cp</argument>
             <classpath />
             <argument>org.eclipse.jetty.demo.Main</argument>
