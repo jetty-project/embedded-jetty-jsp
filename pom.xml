@@ -7,7 +7,7 @@
   <packaging>jar</packaging>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <jetty-version>9.4.0.v20161208</jetty-version>
+    <jetty-version>9.4.5.v20170502</jetty-version>
   </properties>
   <dependencies>
     <dependency>
@@ -23,7 +23,12 @@
     </dependency>
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
-      <artifactId>jetty-servlet</artifactId>
+      <artifactId>jetty-annotations</artifactId>
+      <version>${jetty-version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-webapp</artifactId>
       <version>${jetty-version}</version>
     </dependency>
     <dependency>
@@ -59,41 +64,12 @@
         </configuration>
       </plugin>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-enforcer-plugin</artifactId>
-        <version>1.1.1</version>
-        <executions>
-          <execution>
-            <id>enforce-java</id>
-            <goals>
-              <goal>enforce</goal>
-            </goals>
-            <configuration>
-              <rules>
-                <requireMavenVersion>
-                  <version>[3.0.0,)</version>
-                </requireMavenVersion>
-                <requireJavaVersion>
-                  <version>[1.8,)</version>
-                  <message>[ERROR] OLD JDK [${java.version}] in use.
-                    Jetty ${jetty-version} requires JDK 1.8 or newer</message>
-                </requireJavaVersion>
-              </rules>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>exec-maven-plugin</artifactId>
         <version>1.2</version>
         <configuration>
           <executable>java</executable>
           <arguments>
-            <argument>-Dorg.eclipse.jetty.webapp.LEVEL=DEBUG</argument>
-<!--
-            <argument>-Dorg.apache.jasper.servlet.TldScanner.LEVEL=DEBUG</argument>
--->
             <argument>-Dtomcat.util.scan.StandardJarScanFilter.jarsToScan=taglibs-standard-impl-*</argument>
             <argument>-Dtomcat.util.scan.StandardJarScanFilter.jarsToSkip=apache-*,ecj-*,jetty-*,asm-*,javax.servlet-*,javax.annotation-*,taglibs-standard-spec-*</argument>
             <argument>-cp</argument>
