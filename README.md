@@ -23,17 +23,6 @@ Code Of Interest
 
 See [org.eclipse.jetty.demo.Main](src/main/java/org/eclipse/jetty/demo/Main.java)
 
-**Use JavaC, Not Eclipse JDT**
-
-By default, the JSP implementation will use an internal eclipse JDT compiler,
-Using this system property will disable that behavior and instead use the JDK
-JavaC built-in compiler.
-
-``` java
-// Set JSP to use Standard JavaC always
-System.setProperty("org.apache.jasper.compiler.disablejsr199","false");
-```
-
 **Set a Servlet Temp Directory**
 
 It is important for JSP to define a temp directory suitable for managing itself.
