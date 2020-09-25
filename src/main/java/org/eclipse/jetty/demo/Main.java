@@ -27,6 +27,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -54,6 +55,11 @@ import org.eclipse.jetty.webapp.Configuration;
  */
 public class Main
 {
+    static
+    {
+        LoggingUtil.config();
+    }
+
     // Resource path pointing to where the WEBROOT is
     private static final String WEBROOT_INDEX = "/webroot/";
     
@@ -97,7 +103,6 @@ public class Main
     public static void main(String[] args) throws Exception
     {
         int port = 8080;
-        LoggingUtil.config();
 
         Main main = new Main(port);
         main.start();

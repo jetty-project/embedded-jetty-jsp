@@ -23,15 +23,19 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.logging.LogManager;
 
+import org.eclipse.jetty.util.log.JavaUtilLog;
+import org.eclipse.jetty.util.log.Log;
+
 public final class LoggingUtil
 {
     public static void config()
     {
+        Log.setLog(new JavaUtilLog());
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
         URL url = cl.getResource("logging.properties");
         if (url != null)
         {
-            try(InputStream in = url.openStream())
+            try (InputStream in = url.openStream())
             {
                 LogManager.getLogManager().readConfiguration(in);
             }
@@ -39,6 +43,10 @@ public final class LoggingUtil
             {
                 e.printStackTrace(System.err);
             }
+        }
+        else
+        {
+            System.err.println("Unable to find logging.properties in classpath");
         }
     }
 }

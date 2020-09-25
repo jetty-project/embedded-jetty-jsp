@@ -23,11 +23,13 @@ import org.junit.jupiter.api.Test;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-public class JstlTest extends AbstractMainTest
+public class LambdaJspTest extends AbstractMainTest
 {
     @Test
-    public void canServeJspWithTaglib() throws Exception
+    public void canServeJspWithLambda() throws Exception
     {
-        assertThat(resourceWithUrl("http://localhost:8080/test/jstl.jsp"), containsString("10"));
+        String expected = String.format("<dt>os.version</dt><dd>%s</dd>", System.getProperty("os.version"));
+
+        assertThat(resourceWithUrl("http://localhost:8080/test/lambda.jsp"), containsString(expected));
     }
 }
