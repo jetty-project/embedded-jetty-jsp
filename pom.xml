@@ -3,12 +3,12 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.eclipse.jetty.demo</groupId>
   <artifactId>embedded-jetty-jsp</artifactId>
-  <version>1-SNAPSHOT</version>
+  <version>10.0-SNAPSHOT</version>
   <packaging>jar</packaging>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <maven.compiler.source>1.8</maven.compiler.source>
-    <maven.compiler.target>1.8</maven.compiler.target>
+    <maven.compiler.source>11</maven.compiler.source>
+    <maven.compiler.target>11</maven.compiler.target>
 
     <maven.clean.plugin.version>3.1.0</maven.clean.plugin.version>
     <maven.enforcer.plugin.version>1.4.1</maven.enforcer.plugin.version>
@@ -24,15 +24,14 @@
     <maven.exec.plugin.version>3.0.0</maven.exec.plugin.version>
     <license.plugin.version>4.1</license.plugin.version>
 
-    <logback.version>1.2.0</logback.version>
-    <slf4j.version>1.7.10</slf4j.version>
-    <servlet.version>3.1.0</servlet.version>
-    <jetty.version>9.4.43.v20210629</jetty.version>
+    <slf4j.version>2.0.0-alpha1</slf4j.version>
+    <servlet.version>4.0.3</servlet.version>
+    <jetty.version>10.0.6</jetty.version>
   </properties>
   <dependencies>
     <dependency>
-      <groupId>javax.servlet</groupId>
-      <artifactId>javax.servlet-api</artifactId>
+      <groupId>jakarta.servlet</groupId>
+      <artifactId>jakarta.servlet-api</artifactId>
       <version>${servlet.version}</version>
     </dependency>
     <dependency>
@@ -58,9 +57,9 @@
       <type>pom</type>
     </dependency>
     <dependency>
-      <groupId>ch.qos.logback</groupId>
-      <artifactId>logback-classic</artifactId>
-      <version>${logback.version}</version>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-slf4j-impl</artifactId>
+      <version>${jetty.version}</version>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>

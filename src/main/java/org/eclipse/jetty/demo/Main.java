@@ -37,7 +37,6 @@ import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.DefaultServlet;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
-import org.eclipse.jetty.webapp.Configuration;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
 /**
@@ -86,13 +85,6 @@ public class Main
         ServerConnector connector = new ServerConnector(server);
         connector.setPort(port);
         server.addConnector(connector);
-
-        // Add annotation scanning (for WebAppContexts)
-        Configuration.ClassList classlist = Configuration.ClassList
-            .setServerDefault(server);
-        classlist.addBefore(
-            "org.eclipse.jetty.webapp.JettyWebXmlConfiguration",
-            "org.eclipse.jetty.annotations.AnnotationConfiguration");
 
         // Base URI for servlet context
         URI baseUri = getWebRootResourceUri();
