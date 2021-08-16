@@ -141,9 +141,6 @@ public class Main
         }
         servletContextHandler.setAttribute("javax.servlet.context.tempdir", scratchDir);
 
-        // Setup Default implementation
-        JspFactory.setDefaultFactory(new JspFactoryImpl());
-
         // Set Classloader of Context to be sane (needed for JSTL)
         // JSP requires a non-System classloader, this simply wraps the
         // embedded System classloader in a way that makes it suitable
