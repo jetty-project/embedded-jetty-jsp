@@ -7,7 +7,7 @@ This is a maven project, to build it:
 
 To run the example `org.eclipse.jetty.demo.Main`:
 
-    $ mvn exec:exec
+    $ mvn exec:java
 
 Open your web browser to:
 
