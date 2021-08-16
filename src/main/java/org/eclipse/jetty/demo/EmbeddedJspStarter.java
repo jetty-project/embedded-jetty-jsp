@@ -18,6 +18,8 @@
 
 package org.eclipse.jetty.demo;
 
+import jakarta.servlet.jsp.JspFactory;
+import org.apache.jasper.runtime.JspFactoryImpl;
 import org.apache.tomcat.util.scan.StandardJarScanFilter;
 import org.apache.tomcat.util.scan.StandardJarScanner;
 import org.eclipse.jetty.apache.jsp.JettyJasperInitializer;

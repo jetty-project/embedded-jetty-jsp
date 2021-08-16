@@ -25,9 +25,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import javax.servlet.jsp.JspFactory;
 
 import com.acme.DateServlet;
+import jakarta.servlet.jsp.JspFactory;
 import org.apache.jasper.runtime.JspFactoryImpl;
 import org.apache.tomcat.InstanceManager;
 import org.apache.tomcat.SimpleInstanceManager;
@@ -140,9 +140,6 @@ public class Main
             }
         }
         servletContextHandler.setAttribute("javax.servlet.context.tempdir", scratchDir);
-
-        // Setup Default implementation
-        JspFactory.setDefaultFactory(new JspFactoryImpl());
 
         // Set Classloader of Context to be sane (needed for JSTL)
         // JSP requires a non-System classloader, this simply wraps the
