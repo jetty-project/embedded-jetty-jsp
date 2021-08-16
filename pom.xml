@@ -7,13 +7,33 @@
   <packaging>jar</packaging>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <jetty.version>9.4.35.v20201120</jetty.version>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
+
+    <maven.clean.plugin.version>3.1.0</maven.clean.plugin.version>
+    <maven.enforcer.plugin.version>1.4.1</maven.enforcer.plugin.version>
+    <maven.resources.plugin.version>3.2.0</maven.resources.plugin.version>
+    <maven.compiler.plugin.version>3.8.1</maven.compiler.plugin.version>
+    <maven.shade.plugin.version>3.2.4</maven.shade.plugin.version>
+    <maven.source.plugin.version>3.2.1</maven.source.plugin.version>
+    <maven.surefire.plugin.version>3.0.0-M5</maven.surefire.plugin.version>
+    <maven.jar.plugin.version>3.2.0</maven.jar.plugin.version>
+    <maven.javadoc.plugin.version>3.3.0</maven.javadoc.plugin.version>
+    <maven.install.plugin.version>3.0.0-M1</maven.install.plugin.version>
+    <maven.deploy.plugin.version>3.0.0-M1</maven.deploy.plugin.version>
+    <maven.exec.plugin.version>3.0.0</maven.exec.plugin.version>
+    <license.plugin.version>4.1</license.plugin.version>
+
+    <logback.version>1.0.9</logback.version>
+    <slf4j.version>1.7.10</slf4j.version>
+    <servlet.version>3.1.0</servlet.version>
+    <jetty.version>9.4.43.v20210629</jetty.version>
   </properties>
   <dependencies>
     <dependency>
       <groupId>javax.servlet</groupId>
       <artifactId>javax.servlet-api</artifactId>
-      <version>3.1.0</version>
+      <version>${servlet.version}</version>
     </dependency>
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
@@ -37,6 +57,21 @@
       <version>${jetty.version}</version>
       <type>pom</type>
     </dependency>
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+      <version>${logback.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>${slf4j.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>jul-to-slf4j</artifactId>
+      <version>${slf4j.version}</version>
+    </dependency>
     <!-- Test Deps -->
     <dependency>
       <groupId>org.eclipse.jetty.toolchain</groupId>
@@ -50,16 +85,12 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.8.1</version>
-        <configuration>
-          <source>1.8</source>
-          <target>1.8</target>
-        </configuration>
+        <version>${maven.compiler.plugin.version}</version>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
-        <version>3.2.0</version>
+        <version>${maven.javadoc.plugin.version}</version>
         <executions>
           <execution>
             <id>javadoc-jar</id>
@@ -84,7 +115,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>2.22.2</version>
+        <version>${maven.surefire.plugin.version}</version>
         <configuration>
           <useManifestOnlyJar>false</useManifestOnlyJar>
         </configuration>
@@ -92,17 +123,9 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>exec-maven-plugin</artifactId>
-        <version>3.0.0</version>
+        <version>${maven.exec.plugin.version}</version>
         <configuration>
-          <executable>java</executable>
-          <arguments>
-            <argument>-Dtomcat.util.scan.StandardJarScanFilter.jarsToScan=taglibs-standard-impl-*</argument>
-            <argument>-Dtomcat.util.scan.StandardJarScanFilter.jarsToSkip=apache-*,ecj-*,jetty-*,asm-*,javax.servlet-*,javax.annotation-*,taglibs-standard-spec-*</argument>
-            <argument>-cp</argument>
-            <classpath />
-            <argument>org.eclipse.jetty.demo.Main</argument>
-            <argument>8080</argument>
-          </arguments>
+          <mainClass>org.eclipse.jetty.demo.Main</mainClass>
         </configuration>
       </plugin>
     </plugins>
