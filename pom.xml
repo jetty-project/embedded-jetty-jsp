@@ -24,7 +24,7 @@
     <maven.exec.plugin.version>3.0.0</maven.exec.plugin.version>
     <license.plugin.version>4.1</license.plugin.version>
 
-    <slf4j.version>2.0.0-alpha6</slf4j.version>
+    <slf4j.version>2.0.0-alpha7</slf4j.version>
     <servlet.version>5.0.0</servlet.version>
     <jetty.version>11.0.8</jetty.version>
   </properties>
