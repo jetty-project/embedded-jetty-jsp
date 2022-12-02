@@ -26,7 +26,7 @@
 
     <slf4j.version>2.0.5</slf4j.version>
     <servlet.version>5.0.0</servlet.version>
-    <jetty.version>11.0.12</jetty.version>
+    <jetty.version>11.0.13</jetty.version>
   </properties>
   <dependencies>
     <dependency>
